@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Test connection doc for health check
+    match /test/connection {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Student attempts: can only be read by signed-in teacher/admin or read directly if matching attempt session
+    match /quiz_attempts/{attemptId} {
+      allow read: if isValidId(attemptId) && isSignedIn();
+      allow write: if false; // Only backend service or admin modifies
+    }
+
+    // Student reservation locks: secured from public client writes
+    match /student_reservations/{studentKey} {
+      allow read: if isValidId(studentKey) && isSignedIn();
+      allow write: if false;
+    }
+  }
+}

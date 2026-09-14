@@ -1,0 +1,109 @@
+{
+  "entities": {
+    "quizAttempt": {
+      "title": "Quiz Attempt",
+      "description": "Represents a student track athletics quiz session, answers, and graded score",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique session ID for the attempt"
+        },
+        "studentKey": {
+          "type": "string",
+          "description": "Normalized identifier of the student for deduplication"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "Student first name without title prefix"
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Student last name"
+        },
+        "studentClass": {
+          "type": "string",
+          "description": "Class room e.g. ม.2/1"
+        },
+        "studentNo": {
+          "type": "integer",
+          "description": "Student class number"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["in_progress", "completed", "expired"],
+          "description": "Current lifecycle of this exam session"
+        },
+        "score": {
+          "type": "integer",
+          "description": "Final score out of 20"
+        },
+        "percentage": {
+          "type": "number",
+          "description": "Score percentage 0 to 100"
+        },
+        "correctCount": {
+          "type": "integer",
+          "description": "Number of correct answers"
+        },
+        "wrongCount": {
+          "type": "integer",
+          "description": "Number of wrong answers"
+        },
+        "unansweredCount": {
+          "type": "integer",
+          "description": "Number of unanswered questions"
+        },
+        "currentQuestionIndex": {
+          "type": "integer",
+          "description": "0-based index of the active question (0 to 19)"
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when quiz started"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when quiz was completed"
+        }
+      },
+      "required": ["studentKey", "firstName", "lastName", "studentClass", "studentNo", "status"]
+    },
+    "studentReservation": {
+      "title": "Student Reservation",
+      "description": "Unique key lock mapping normalized name to attempt ID to prevent duplicate tests",
+      "type": "object",
+      "properties": {
+        "studentKey": {
+          "type": "string",
+          "description": "Unique normalized key"
+        },
+        "attemptId": {
+          "type": "string",
+          "description": "Reference to the active or completed quiz attempt"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["in_progress", "completed"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["studentKey", "attemptId", "status"]
+    }
+  },
+  "firestore": {
+    "/quiz_attempts/{attemptId}": {
+      "schema": "quizAttempt",
+      "description": "Stores individual student exam attempts and answers"
+    },
+    "/student_reservations/{studentKey}": {
+      "schema": "studentReservation",
+      "description": "Stores unique student reservation locks for deduplication"
+    }
+  }
+}
